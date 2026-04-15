@@ -1,0 +1,26 @@
+opn:
+  endpoint: "http://localhost:3000"
+  submitter_handle: "opn-worker"
+  claim:
+    priority: null
+    estimated_days: 30
+    work_notes: "YAFU SNFS worker"
+  lease:
+    extend_when_hours_remaining: 48
+    extension_days: 15
+    check_interval_seconds: 600
+
+yafu:
+  dir: "/home/kylea/yafu"
+  binary: "./yafu"
+  threads: 8
+  # -v enables ETA reporting for sieving and linear algebra.
+  extra_args: ["-v"]
+
+work_loop:
+  no_work_sleep_seconds: 300
+  max_consecutive_failures: 3
+
+logging:
+  level: "INFO"
+  file: "data/logs/opn_client.log"

@@ -1,0 +1,16 @@
+# Copy this file to config.local.yaml and fill in your values.
+# config.local.yaml is gitignored.
+
+opn:
+  endpoint: "https://your-opn-host.example.com"
+  submitter_handle: "your-handle"
+
+# Per-user API key generated from opn-tracker's /profile page.
+# Sign in via OAuth, go to /profile, create a labeled key, and paste it here.
+# Keys start with "opn_". Treat like a password; shown only once at creation.
+api_key: "opn_PASTE_YOUR_KEY_HERE"
+
+# Optional overrides:
+# yafu:
+#   dir: "/home/youruser/yafu"
+#   threads: 16
