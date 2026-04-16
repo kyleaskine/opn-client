@@ -103,17 +103,36 @@ def _submit_factors(
     exponent: int,
     factors: list[str],
     submitter_handle: str,
-) -> int:
-    """Submit each factor; return count successfully submitted."""
+) -> tuple[int, bool]:
+    """Submit each factor; return (count_submitted, fully_factored).
+
+    Stops early once the server reports the entry is fully factored — it
+    derives the final cofactor from the previous submission, so submitting
+    the rest would only produce "already fully factored" 400s. The server
+    also auto-releases the claim in that case, so the caller can skip its
+    explicit release.
+    """
     ok = 0
-    for factor in factors:
+    fully_factored = False
+    remaining = sorted(factors, key=len)
+    for i, factor in enumerate(remaining):
         try:
-            api.submit_factor(base, exponent, factor, submitter_handle)
+            result = api.submit_factor(base, exponent, factor, submitter_handle)
             logger.info("Submitted factor (%d digits): %s...", len(factor), factor[:20])
             ok += 1
         except ApiError as exc:
             logger.error("Submit failed for factor %s...: %s", factor[:20], exc)
-    return ok
+            continue
+        if (result.get("updated_status") or {}).get("fully_factored"):
+            fully_factored = True
+            skipped = len(remaining) - (i + 1)
+            if skipped:
+                logger.info(
+                    "Server reports entry fully factored; skipping %d remaining factor(s).",
+                    skipped,
+                )
+            break
+    return ok, fully_factored
 
 
 def run(cfg: dict[str, Any], once: bool = False) -> int:
@@ -214,14 +233,17 @@ def run(cfg: dict[str, Any], once: bool = False) -> int:
             return 130
 
         if factors:
-            submitted = _submit_factors(api, base, exponent, factors, submitter)
-            # submit-factor-simple auto-releases the claim when fully factored.
-            # Release explicitly to cover partial-factor cases; a redundant release
-            # is a no-op on the server side.
-            _safe_release(
-                api, claim_id,
-                notes=f"yafu rc={returncode}; submitted {submitted}/{len(factors)} factor(s)",
+            submitted, fully_factored = _submit_factors(
+                api, base, exponent, factors, submitter,
             )
+            # Server auto-releases the claim when the entry becomes fully
+            # factored; a second release would 400 with "Can only modify
+            # active claims". Only release ourselves on partial factorization.
+            if not fully_factored:
+                _safe_release(
+                    api, claim_id,
+                    notes=f"yafu rc={returncode}; submitted {submitted}/{len(factors)} factor(s)",
+                )
         else:
             logger.warning("YAFU produced no factors (rc=%d); releasing claim.", returncode)
             _safe_release(api, claim_id, notes=f"yafu rc={returncode}; no factors")

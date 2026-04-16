@@ -11,11 +11,8 @@ opn:
     check_interval_seconds: 600
 
 yafu:
-  dir: "/home/kylea/yafu"
   binary: "./yafu"
   threads: 8
-  # -v enables ETA reporting for sieving and linear algebra.
-  extra_args: ["-v"]
 
 work_loop:
   no_work_sleep_seconds: 300

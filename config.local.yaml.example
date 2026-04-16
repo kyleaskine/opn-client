@@ -1,4 +1,6 @@
-# Copy this file to config.local.yaml and fill in your values.
+# The easiest way to create config.local.yaml is to run the setup wizard:
+#     python3 setup.py
+# Otherwise, copy this file to config.local.yaml and fill in your values.
 # config.local.yaml is gitignored.
 
 opn:
@@ -10,7 +12,10 @@ opn:
 # Keys start with "opn_". Treat like a password; shown only once at creation.
 api_key: "opn_PASTE_YOUR_KEY_HERE"
 
-# Optional overrides:
-# yafu:
-#   dir: "/home/youruser/yafu"
-#   threads: 16
+# YAFU install directory (required). YAFU writes nfs.dat, factor.log, etc.
+# directly into cwd, so the worker always runs YAFU from this directory.
+yafu:
+  dir: "/home/youruser/yafu"
+  # Optional overrides (defaults from config.yaml):
+  # binary: "./yafu"
+  # threads: 8
