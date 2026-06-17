@@ -16,7 +16,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-from lib.config import ConfigError, load_config  # noqa: E402
+from lib.config import ConfigError, load_config, resolve_under_root  # noqa: E402
 from lib.yafu import YafuDirBusy, yafu_dir_lock  # noqa: E402
 from lib import work_loop  # noqa: E402
 
@@ -65,7 +65,7 @@ def setup_logging(cfg: dict, verbose: bool) -> None:
 
     log_file = cfg.get("logging", {}).get("file")
     if log_file:
-        log_path = (HERE / log_file) if not Path(log_file).is_absolute() else Path(log_file)
+        log_path = resolve_under_root(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.handlers.RotatingFileHandler(
             log_path, maxBytes=10 * 1024 * 1024, backupCount=5,

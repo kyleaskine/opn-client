@@ -10,6 +10,17 @@ class ConfigError(Exception):
     pass
 
 
+# Repo root is the parent of this lib/ package. Relative paths in config
+# (log file, pending store) resolve against it.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def resolve_under_root(path: str | Path) -> Path:
+    """Resolve ``path`` to an absolute path, joining to the repo root if relative."""
+    p = Path(path).expanduser()
+    return p if p.is_absolute() else (REPO_ROOT / p)
+
+
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     out = dict(base)
     for key, val in override.items():

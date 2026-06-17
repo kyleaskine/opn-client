@@ -17,6 +17,16 @@ yafu:
 work_loop:
   no_work_sleep_seconds: 300
   max_consecutive_failures: 3
+  # Factors the server can't record yet (e.g. FactorDB outage -> HTTP 500) are
+  # cached here and retried before each new claim, so found factors are never
+  # lost and the composite isn't refactored. Relative paths resolve to the repo
+  # root; data/ is gitignored.
+  pending_store: "data/pending_submissions.json"
+  # Give up on a cached submission after this many failed retries, releasing its
+  # held claim so a permanently-rejected factor can't occupy a claim slot
+  # forever. Set high enough to outlast expected outages (a retry happens at
+  # most once per loop iteration); dropped factors are logged.
+  max_submit_retries: 50
 
 logging:
   level: "INFO"
