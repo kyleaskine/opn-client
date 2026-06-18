@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import os
@@ -164,7 +165,9 @@ class PendingStore:
     def get(self, base: str, exponent: int) -> dict[str, Any] | None:
         with self._lock:
             rec = self._data.get(self._key(base, exponent))
-            return dict(rec) if rec else None
+            # Deep copy so a caller mutating e.g. the nested factors list can't
+            # corrupt the in-memory store.
+            return copy.deepcopy(rec) if rec else None
 
     def has(self, base: str, exponent: int) -> bool:
         with self._lock:
@@ -172,7 +175,7 @@ class PendingStore:
 
     def items(self) -> list[dict[str, Any]]:
         with self._lock:
-            return [dict(v) for v in self._data.values()]
+            return [copy.deepcopy(v) for v in self._data.values()]
 
     def remove(self, base: str, exponent: int) -> None:
         with self._lock:
